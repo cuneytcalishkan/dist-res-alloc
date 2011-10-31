@@ -2,7 +2,6 @@ package peersim.EP2400.resourcealloc.tasks;
 
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
 
 import peersim.EP2400.resourcealloc.base.Application;
 import peersim.EP2400.resourcealloc.base.ApplicationsList;
@@ -51,9 +50,10 @@ public class DistributedResourceAllocation extends DistributedPlacementProtocol 
 
 		// send and receive message by method call. This follows the
 		// cycle-driven simulation approach.
-		ApplicationsList A_n_prime = n_prime.passiveThread(this
-				.applicationsList());
-		this.updatePlacement(A_n_prime);
+		double peerLoad = n_prime.passiveGetLoad();
+		ApplicationsList A_n_prime = n_prime.passiveThread(
+				this.applicationsList(), getTotalDemand());
+		this.updatePlacement(A_n_prime, peerLoad);
 	}
 
 	/**
@@ -70,15 +70,19 @@ public class DistributedResourceAllocation extends DistributedPlacementProtocol 
 		return tempLoad;
 	}
 
-	public ApplicationsList passiveThread(ApplicationsList A_n_prime) {
+	public ApplicationsList passiveThread(ApplicationsList A_n_prime,
+			double peerLoad) {
 		ApplicationsList tempA_n = this.applicationsList();
-		this.updatePlacement(A_n_prime);
+		this.updatePlacement(A_n_prime, peerLoad);
 		return tempA_n;
 	}
 
-	public void updatePlacement(ApplicationsList A_n_prime) {
+	public double passiveGetLoad() {
+		return getTotalDemand();
+	}
+
+	public void updatePlacement(ApplicationsList A_n_prime, double peerLoad) {
 		// TODO Implement your code for task 2 here
-		double peerLoad = A_n_prime.totalCPUDemand();
 		double var = Math.abs(peerLoad - getTotalDemand());
 		// Overload scenario
 		if (getLoadEstimate() > getCpuCapacity()) {
@@ -91,17 +95,16 @@ public class DistributedResourceAllocation extends DistributedPlacementProtocol 
 					incrementNewApps();
 				}
 			} else {
-				appToSwitch = eliminateAppsGTVar(applicationsList(), var);
+				appToSwitch = eliminateAppsGTVar(this.applicationsList(), var);
 				if (appToSwitch != null) {
 					deallocateApplication(appToSwitch);
-					// incrementNewApps();
 				}
 			}
 		} else {
 			// TODO underload scenario
 			ApplicationsList appsToSwitch = null;
 
-			if (peerLoad > getCpuCapacity()) {//Peer is overloaded
+			if (peerLoad > getCpuCapacity()) {// Peer is overloaded
 				if (getTotalDemand() < getCpuCapacity()) {// Node is underloaded
 					var = getCpuCapacity() - getTotalDemand();
 					appsToSwitch = getAppsToSwitch(A_n_prime, var);
@@ -109,10 +112,10 @@ public class DistributedResourceAllocation extends DistributedPlacementProtocol 
 						allocateApplication(app);
 					}
 				}// else Node is overloaded
-			} else { //Peer is underloaded
+			} else { // Peer is underloaded
 				if (getTotalDemand() > getCpuCapacity()) { // Node is overloaded
 					var = getCpuCapacity() - peerLoad;
-					appsToSwitch = getAppsToSwitch(applicationsList(), var);
+					appsToSwitch = getAppsToSwitch(this.applicationsList(), var);
 					for (Application app : appsToSwitch) {
 						deallocateApplication(app);
 					}
@@ -125,7 +128,7 @@ public class DistributedResourceAllocation extends DistributedPlacementProtocol 
 						}
 					} else {
 						var = getCpuCapacity() - peerLoad;
-						appsToSwitch = getAppsToSwitch(applicationsList(), var);
+						appsToSwitch = getAppsToSwitch(this.applicationsList(), var);
 						for (Application app : appsToSwitch) {
 							deallocateApplication(app);
 						}
@@ -143,9 +146,9 @@ public class DistributedResourceAllocation extends DistributedPlacementProtocol 
 		boolean loop = true;
 		int i = 0;
 		while ((i < A_n_prime.size()) && loop) {
-			if ((sum + A_n_prime.get(i).getExpectedCPUDemand()) <= var) {
+			if ((sum + A_n_prime.get(i).getCPUDemand()) <= var) {
 				appsToSwitch.add(A_n_prime.get(i));
-				sum += A_n_prime.get(i).getExpectedCPUDemand();
+				sum += A_n_prime.get(i).getCPUDemand();
 				i++;
 				incrementNewApps();
 			} else
