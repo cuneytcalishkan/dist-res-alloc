@@ -100,19 +100,36 @@ public class DistributedResourceAllocation extends DistributedPlacementProtocol 
 		} else {
 			// TODO underload scenario
 			ApplicationsList appsToSwitch = null;
-			if (peerLoad < getTotalDemand()) {
-				
-				
-				var = Math.abs(getCpuCapacity() - getTotalDemand());
-				appsToSwitch = getAppsToSwitch(A_n_prime, var);
-				for (Application app : appsToSwitch) {
-					allocateApplication(app);
-				}
-			} else {
-				var = Math.abs(peerLoad - getCpuCapacity());
-				appsToSwitch = getAppsToSwitch(applicationsList(), var);
-				for (Application app : appsToSwitch) {
-					deallocateApplication(app);
+
+			if (peerLoad > getCpuCapacity()) {//Peer is overloaded
+				if (getTotalDemand() < getCpuCapacity()) {// Node is underloaded
+					var = getCpuCapacity() - getTotalDemand();
+					appsToSwitch = getAppsToSwitch(A_n_prime, var);
+					for (Application app : appsToSwitch) {
+						allocateApplication(app);
+					}
+				}// else Node is overloaded
+			} else { //Peer is underloaded
+				if (getTotalDemand() > getCpuCapacity()) { // Node is overloaded
+					var = getCpuCapacity() - peerLoad;
+					appsToSwitch = getAppsToSwitch(applicationsList(), var);
+					for (Application app : appsToSwitch) {
+						deallocateApplication(app);
+					}
+				} else { // Node is underloaded
+					if (peerLoad < getTotalDemand()) {
+						var = getCpuCapacity() - getTotalDemand();
+						appsToSwitch = getAppsToSwitch(A_n_prime, var);
+						for (Application app : appsToSwitch) {
+							allocateApplication(app);
+						}
+					} else {
+						var = getCpuCapacity() - peerLoad;
+						appsToSwitch = getAppsToSwitch(applicationsList(), var);
+						for (Application app : appsToSwitch) {
+							deallocateApplication(app);
+						}
+					}
 				}
 			}
 		}
