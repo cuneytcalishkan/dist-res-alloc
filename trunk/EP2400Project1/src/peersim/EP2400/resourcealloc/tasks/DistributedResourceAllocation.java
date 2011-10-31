@@ -2,6 +2,7 @@ package peersim.EP2400.resourcealloc.tasks;
 
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 
 import peersim.EP2400.resourcealloc.base.Application;
 import peersim.EP2400.resourcealloc.base.ApplicationsList;
@@ -77,12 +78,10 @@ public class DistributedResourceAllocation extends DistributedPlacementProtocol 
 
 	public void updatePlacement(ApplicationsList A_n_prime) {
 		// TODO Implement your code for task 2 here
+		double peerLoad = A_n_prime.totalCPUDemand();
+		double var = Math.abs(peerLoad - getTotalDemand());
+		// Overload scenario
 		if (getLoadEstimate() > getCpuCapacity()) {
-			double peerLoad = 0;
-			for (Application app : A_n_prime) {
-				peerLoad += app.getCPUDemand();
-			}
-			double var = Math.abs(peerLoad - getTotalDemand());
 			// Check who has more load, so that it can share with the other
 			Application appToSwitch = null;
 			if (peerLoad > getTotalDemand()) {
@@ -95,12 +94,47 @@ public class DistributedResourceAllocation extends DistributedPlacementProtocol 
 				appToSwitch = eliminateAppsGTVar(applicationsList(), var);
 				if (appToSwitch != null) {
 					deallocateApplication(appToSwitch);
-					incrementNewApps();
+					// incrementNewApps();
 				}
 			}
 		} else {
 			// TODO underload scenario
+			ApplicationsList appsToSwitch = null;
+			if (peerLoad < getTotalDemand()) {
+				
+				
+				var = Math.abs(getCpuCapacity() - getTotalDemand());
+				appsToSwitch = getAppsToSwitch(A_n_prime, var);
+				for (Application app : appsToSwitch) {
+					allocateApplication(app);
+				}
+			} else {
+				var = Math.abs(peerLoad - getCpuCapacity());
+				appsToSwitch = getAppsToSwitch(applicationsList(), var);
+				for (Application app : appsToSwitch) {
+					deallocateApplication(app);
+				}
+			}
 		}
+	}
+
+	private ApplicationsList getAppsToSwitch(ApplicationsList A_n_prime,
+			double var) {
+		ApplicationsList appsToSwitch = new ApplicationsList();
+		Collections.sort(A_n_prime, new AppDemandComparator());
+		double sum = 0;
+		boolean loop = true;
+		int i = 0;
+		while ((i < A_n_prime.size()) && loop) {
+			if ((sum + A_n_prime.get(i).getExpectedCPUDemand()) <= var) {
+				appsToSwitch.add(A_n_prime.get(i));
+				sum += A_n_prime.get(i).getExpectedCPUDemand();
+				i++;
+				incrementNewApps();
+			} else
+				loop = false;
+		}
+		return appsToSwitch;
 	}
 
 	private Application eliminateAppsGTVar(ApplicationsList apps, double var) {
@@ -111,7 +145,7 @@ public class DistributedResourceAllocation extends DistributedPlacementProtocol 
 				result = app;
 			}
 		}
-		if (result == null) {
+		if ((result == null) && (!apps.isEmpty())) {
 			result = apps.get(0);
 		}
 		return result;
