@@ -81,11 +81,6 @@ public class PerformanceObserver implements Control {
 		IncrementalStats is = new IncrementalStats();
 		IncrementalStats isal = new IncrementalStats();
 
-		IncrementalStats isV = new IncrementalStats();
-		IncrementalStats isS = new IncrementalStats();
-		IncrementalStats isC = new IncrementalStats();
-		IncrementalStats isR = new IncrementalStats();
-
 		for (int i = 0; i < Network.size(); i++) {
 			DistributedResourceAllocation protocol = (DistributedResourceAllocation) Network
 					.get(i).getProtocol(pid);
@@ -109,13 +104,6 @@ public class PerformanceObserver implements Control {
 		R = (double) activeServers / Network.size();
 		C = (double) newApps / appsCount;
 
-		if (cycle % r_max == 0) {
-			isR.add(R);
-			isV.add(V);
-			isC.add(C);
-			isS.add(S);
-		}
-
 		try {
 			FileWriter fw1 = new FileWriter("sim-results/cycles.csv", true);
 			FileWriter fw2 = new FileWriter("sim-results/epochs.csv", true);
@@ -127,13 +115,6 @@ public class PerformanceObserver implements Control {
 				fw2.write(cf.format((cycle / r_max) + 1) + "\t" + df.format(V)
 						+ "\t" + df.format(S) + "\t" + df.format(R) + "\t"
 						+ df.format(C) + "\n");
-				if (cycle == 1499) {
-					fw2.write("End of Simulation - Average results are as follows:\n");
-					fw2.write(df.format(isV.getAverage()) + "\t"
-							+ df.format(isS.getAverage()) + "\t"
-							+ df.format(isR.getAverage()) + "\t"
-							+ df.format(isC.getAverage()) + "\n");
-				}
 			}
 			fw1.close();
 			fw2.close();
