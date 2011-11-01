@@ -46,7 +46,6 @@ public class DistributedResourceAllocation extends DistributedPlacementProtocol 
 		// system load
 		double loadPrime = n_prime.passiveLoadEstimator(getLoadEstimate());
 		this.setLoadEstimate((loadPrime + getLoadEstimate()) / 2);
-		setNewApps(0);
 		// send and receive message by method call. This follows the
 		// cycle-driven simulation approach.
 		ApplicationsList A_n_prime = n_prime.passiveThread(this
@@ -76,6 +75,7 @@ public class DistributedResourceAllocation extends DistributedPlacementProtocol 
 
 	public void updatePlacement(ApplicationsList A_n_prime) {
 		// TODO Implement your code for task 2 here
+		setNewApps(0);
 		double peerLoad = A_n_prime.totalCPUDemand();
 		double totalDemand = getTotalDemand();
 		double cpuCapacity = getCpuCapacity();
@@ -155,7 +155,6 @@ public class DistributedResourceAllocation extends DistributedPlacementProtocol 
 				appsToSwitch.add(A_n_prime.get(i));
 				sum += A_n_prime.get(i).getCPUDemand();
 				i++;
-				incrementNewApps();
 			} else
 				loop = false;
 		}

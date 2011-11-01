@@ -2,6 +2,7 @@ package peersim.EP2400.resourcealloc.tasks;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.DecimalFormat;
 
 import peersim.EP2400.resourcealloc.base.Application;
 import peersim.config.Configuration;
@@ -69,17 +70,36 @@ public class PerformanceObserver implements Control {
 		int satisfied = 0;
 		int activeServers = 0;
 		int newApps = 0;
+		double cpuDemand = 0;
+		double cpuCapacity = 0;
+		DecimalFormat df = new DecimalFormat("####.######");
+		DecimalFormat cf = new DecimalFormat();
+		cf.setMinimumIntegerDigits(4);
+		cf.setMaximumFractionDigits(0);
+		cf.setGroupingUsed(false);
+		df.setMinimumFractionDigits(6);
 		IncrementalStats is = new IncrementalStats();
 		IncrementalStats isal = new IncrementalStats();
+
+		IncrementalStats isV = new IncrementalStats();
+		IncrementalStats isS = new IncrementalStats();
+		IncrementalStats isC = new IncrementalStats();
+		IncrementalStats isR = new IncrementalStats();
+
 		for (int i = 0; i < Network.size(); i++) {
 			DistributedResourceAllocation protocol = (DistributedResourceAllocation) Network
 					.get(i).getProtocol(pid);
+			cpuDemand = protocol.getTotalDemand();
+			cpuCapacity = protocol.getCpuCapacity();
+
 			isal.add(protocol.getLoadEstimate());
+			is.add(protocol.getTotalDemand());
 			for (Application a : protocol.applicationsList()) {
-				if (a.getCPUDemand() >= a.getExpectedCPUDemand())
+				if (a.getCPUDemand() <= getAllocatedCpu(cpuCapacity,
+						a.getCPUDemand(), cpuDemand))
 					satisfied++;
 			}
-			is.add(protocol.getTotalDemand());
+
 			if (protocol.appsCount() > 0)
 				activeServers++;
 			newApps += protocol.getNewApps();
@@ -88,16 +108,32 @@ public class PerformanceObserver implements Control {
 		V = is.getStD() / is.getAverage();
 		R = (double) activeServers / Network.size();
 		C = (double) newApps / appsCount;
-		// TODO Implement your code for task 1.2 here
+
+		if (cycle % r_max == 0) {
+			isR.add(R);
+			isV.add(V);
+			isC.add(C);
+			isS.add(S);
+		}
+
 		try {
 			FileWriter fw1 = new FileWriter("sim-results/cycles.csv", true);
 			FileWriter fw2 = new FileWriter("sim-results/epochs.csv", true);
 
-			fw1.write(cycle + "," + V + "," + S + "," + R + "," + C + ","
-					+ (Network.size() - activeServers) + "\n");
+			fw1.write(cf.format(cycle + 1) + "\t" + df.format(V) + "\t"
+					+ df.format(S) + "\t" + df.format(R) + "\t" + df.format(C)
+					+ "\t" + df.format((Network.size() - activeServers)) + "\n");
 			if (cycle % r_max == 0) {
-				fw2.write((cycle + 1) / r_max + "," + V + "," + S + "," + R
-						+ "," + C + "\n");
+				fw2.write(cf.format((cycle / r_max) + 1) + "\t" + df.format(V)
+						+ "\t" + df.format(S) + "\t" + df.format(R) + "\t"
+						+ df.format(C) + "\n");
+				if (cycle == 1499) {
+					fw2.write("End of Simulation - Average results are as follows:\n");
+					fw2.write(df.format(isV.getAverage()) + "\t"
+							+ df.format(isS.getAverage()) + "\t"
+							+ df.format(isR.getAverage()) + "\t"
+							+ df.format(isC.getAverage()) + "\n");
+				}
 			}
 			fw1.close();
 			fw2.close();
@@ -106,6 +142,11 @@ public class PerformanceObserver implements Control {
 		}
 
 		return false;
+	}
+
+	private double getAllocatedCpu(double cpuCapacity, double appDemand,
+			double totalCpuDemand) {
+		return (appDemand / totalCpuDemand) * cpuCapacity;
 	}
 
 }
