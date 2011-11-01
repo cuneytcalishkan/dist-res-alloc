@@ -76,7 +76,7 @@ public class PerformanceObserver implements Control {
 					.get(i).getProtocol(pid);
 			isal.add(protocol.getLoadEstimate());
 			for (Application a : protocol.applicationsList()) {
-				if (a.getCPUDemand() <= a.getExpectedCPUDemand())
+				if (a.getCPUDemand() >= a.getExpectedCPUDemand())
 					satisfied++;
 			}
 			is.add(protocol.getTotalDemand());
