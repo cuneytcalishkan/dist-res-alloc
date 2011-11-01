@@ -105,8 +105,8 @@ public class PerformanceObserver implements Control {
 		C = (double) newApps / appsCount;
 
 		try {
-			FileWriter fw1 = new FileWriter("sim-results/cycles.csv", true);
-			FileWriter fw2 = new FileWriter("sim-results/epochs.csv", true);
+			FileWriter fw1 = new FileWriter("sim-results/cycles.tsv", true);
+			FileWriter fw2 = new FileWriter("sim-results/epochs.tsv", true);
 
 			fw1.write(cf.format(cycle + 1) + "\t" + df.format(V) + "\t"
 					+ df.format(S) + "\t" + df.format(R) + "\t" + df.format(C)
