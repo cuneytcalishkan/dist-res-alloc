@@ -107,17 +107,21 @@ public class PerformanceObserver implements Control {
 		try {
 			FileWriter fw1 = new FileWriter("sim-results/cycles.tsv", true);
 			FileWriter fw2 = new FileWriter("sim-results/epochs.tsv", true);
+			FileWriter fw3 = new FileWriter("sim-results/cyclon_output.tsv",
+					true);
 
 			fw1.write(cf.format(cycle + 1) + "\t" + df.format(V) + "\t"
-					+ df.format(S) + "\t" + df.format(R) + "\t" + df.format(C)
-					+ "\t" + df.format((Network.size() - activeServers)) + "\n");
+					+ df.format(S) + "\t" + df.format(R) + "\n");
 			if (cycle % r_max == 0) {
 				fw2.write(cf.format((cycle / r_max) + 1) + "\t" + df.format(V)
 						+ "\t" + df.format(S) + "\t" + df.format(R) + "\t"
 						+ df.format(C) + "\n");
 			}
+			fw3.write(cf.format(cycle + 1) + "\t" + df.format(isal.getVar())
+					+ "\n");
 			fw1.close();
 			fw2.close();
+			fw3.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
