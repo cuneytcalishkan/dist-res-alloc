@@ -94,10 +94,11 @@ public class PerformanceObserver implements Control {
 						a.getCPUDemand(), cpuDemand))
 					satisfied++;
 			}
-
 			if (protocol.appsCount() > 0)
 				activeServers++;
-			newApps += protocol.getNewApps();
+			if ((cycle + 1) % r_max == 0) {
+				newApps += protocol.getNewApps();
+			}
 		}
 		S = (double) satisfied / appsCount;
 		V = is.getStD() / is.getAverage();
@@ -112,13 +113,13 @@ public class PerformanceObserver implements Control {
 
 			fw1.write(cf.format(cycle + 1) + "\t" + df.format(V) + "\t"
 					+ df.format(S) + "\t" + df.format(R) + "\n");
-			if (cycle % r_max == 0) {
+			if ((cycle + 1) % r_max == 0) {
 				fw2.write(cf.format((cycle / r_max) + 1) + "\t" + df.format(V)
 						+ "\t" + df.format(S) + "\t" + df.format(R) + "\t"
 						+ df.format(C) + "\n");
 			}
-			fw3.write(cf.format(cycle + 1) + "\t" + df.format(isal.getVar())
-					+ "\n");
+			// fw3.write(cf.format(cycle + 1) + "\t" + df.format(isal.getVar())
+			// + "\n");
 			fw1.close();
 			fw2.close();
 			fw3.close();

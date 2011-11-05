@@ -75,7 +75,6 @@ public class DistributedResourceAllocation extends DistributedPlacementProtocol 
 
 	public void updatePlacement(ApplicationsList A_n_prime) {
 		// TODO Implement your code for task 2 here
-		setNewApps(0);
 		double peerLoad = A_n_prime.totalCPUDemand();
 		double totalDemand = getTotalDemand();
 		double cpuCapacity = getCpuCapacity();
