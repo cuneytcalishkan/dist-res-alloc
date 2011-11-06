@@ -30,6 +30,16 @@ public class DistributedResourceAllocation extends DistributedPlacementProtocol 
 	}
 
 	public void nextCycle(Node node, int protocolID) {
+
+		int cycle = (int) CommonState.getTime();
+
+		if ((cycle + 1) % r_max == 0) {
+			setLoadEstimate(getTotalDemand());
+			setNewApps(0);
+		} else if (cycle == 0) {
+			setLoadEstimate(getTotalDemand());
+		}
+
 		int linkableID = FastConfig.getLinkable(protocolID);
 		Linkable linkable = (Linkable) node.getProtocol(linkableID);
 
